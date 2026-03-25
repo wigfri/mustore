@@ -1,0 +1,90 @@
+definitions:
+  create_example.Request:
+    properties:
+      example:
+        $ref: '#/definitions/models.Example'
+    type: object
+  models.Example:
+    properties:
+      first_row:
+        type: integer
+      id:
+        type: string
+      second_row:
+        type: integer
+    type: object
+  v1.RawResponse:
+    type: object
+info:
+  contact: {}
+paths:
+  /api/v1/example/:
+    get:
+      description: Retrieve a list of all examples
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns a list of examples
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+      summary: Get all examples
+      tags:
+      - examples
+    post:
+      consumes:
+      - application/json
+      description: Create a new example with the provided details
+      parameters:
+      - description: Example request
+        in: body
+        name: create_example.Request
+        required: true
+        schema:
+          $ref: '#/definitions/create_example.Request'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the ID of the created example
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+      summary: Create a new example
+      tags:
+      - examples
+  /api/v1/example/{id}:
+    get:
+      description: Retrieve a single example by its ID
+      parameters:
+      - description: Example ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Returns the requested example
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/v1.RawResponse'
+      summary: Get an example by ID
+      tags:
+      - examples
+swagger: "2.0"
