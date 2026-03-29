@@ -1,0 +1,4 @@
+name: server
+variables:
+  - name: server
+    value: http://localhost:8000

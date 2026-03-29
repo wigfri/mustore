@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/wigfri/mustore/domain"
+	"github.com/wigfri/mustore/domain/models"
 	"github.com/wigfri/mustore/domain/repositories"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,13 +13,13 @@ import (
 type connection struct {
 	db *gorm.DB
 
-	exampleRepository repositories.Example
+	userRepository repositories.User
 }
 
 func makeConnection(db *gorm.DB) *connection {
 	return &connection{
-		db:                db,
-		exampleRepository: &exampleRepository{db},
+		db:             db,
+		userRepository: &userRepository{db},
 	}
 }
 
@@ -46,9 +47,15 @@ func Make(user, password, host, port, database, sslmode string) (domain.Connecti
 		return nil, fmt.Errorf("unable to ping DB due [%s]", err)
 	}
 
+	if err := db.AutoMigrate(
+		&models.User{},
+	); err != nil {
+		return nil, fmt.Errorf("unable to migrate database due [%w]", err)
+	}
+
 	return makeConnection(db), nil
 }
 
-func (c connection) Example() repositories.Example {
-	return c.exampleRepository
+func (c connection) User() repositories.User {
+	return c.userRepository
 }

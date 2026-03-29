@@ -74,11 +74,11 @@ func (s *HttpServer) Start() {
 	}
 	domainCtx.Services().Logger().Info("swagger handler initialized", "op", "server.Start()")
 
-	example := s.app.Group("/api/v1/example")
+	example := s.app.Group("/api/v1/user")
 	{
-		example.Post("/", v1.WrapHandler(v1.CreateExample))
-		example.Get("/:id/", v1.WrapHandler(v1.GetExample))
-		example.Get("/", v1.WrapHandler(v1.GetAllExamples))
+		example.Post("/", v1.WrapHandler(v1.CreateUser))
+		example.Get("/:id/", v1.WrapHandler(v1.GetUser))
+		example.Get("/", v1.WrapHandler(v1.GetAllUser))
 	}
 
 	domainCtx.Services().Logger().Info("auth handlers initialized", "op", "server.Start()")

@@ -42,7 +42,7 @@ paths:
       parameters:
       - description: Example request
         in: body
-        name: create_example.Request
+        name: create_user.Request
         required: true
         schema:
           $ref: '#/definitions/create_example.Request'

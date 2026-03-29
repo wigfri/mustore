@@ -1,20 +1,21 @@
-package get_all_example
+package get_all_users
 
 import (
 	"fmt"
+
 	"github.com/wigfri/mustore/domain"
 	"github.com/wigfri/mustore/domain/models"
 )
 
 type Response struct {
-	Examples []*models.Example `json:"examples"`
+	Users []*models.User `json:"users"`
 }
 
 func Run(c domain.Context) (*Response, error) {
-	examples, err := c.Connection().Example().All()
+	users, err := c.Connection().User().All()
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve roles due [%s]", err)
 	}
 
-	return &Response{Examples: examples}, nil
+	return &Response{Users: users}, nil
 }

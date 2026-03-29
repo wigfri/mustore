@@ -55,11 +55,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Example request",
-                        "name": "create_example.Request",
+                        "name": "create_user.Request",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/create_example.Request"
+                            "$ref": "#/definitions/create_user.Request"
                         }
                     }
                 ],
@@ -122,7 +122,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "create_example.Request": {
+        "create_user.Request": {
             "type": "object",
             "properties": {
                 "example": {
