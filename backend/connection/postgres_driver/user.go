@@ -28,8 +28,10 @@ func (e *userRepository) Update(id uuid.UUID, u *models.User) (*models.User, err
 	}
 
 	updates := map[string]interface{}{
-		"username":   u.Username,
-		"updated_at": time.Now(),
+		"username":      u.Username,
+		"is_verified":   u.IsVerified,
+		"role":          string(u.Role),
+		"updated_at":    time.Now(),
 	}
 
 	if err := e.db.Model(&user{}).Where("id = ?", id).Updates(updates).Error; err != nil {

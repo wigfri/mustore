@@ -85,6 +85,8 @@ func (s *HttpServer) Start() {
 	{
 		auth.Post("/login", v1.WrapHandler(v1.Login))
 		auth.Post("/logout", v1.WrapHandler(v1.Logout))
+		auth.Post("/verify-email", v1.WrapHandler(v1.VerifyEmail))
+		auth.Post("/resend-verification", v1.WrapHandler(v1.ResendVerification))
 	}
 
 	domainCtx.Services().Logger().Info("auth handlers initialized", "op", "server.Start()")

@@ -1,6 +1,7 @@
 package create_user
 
 import (
+	"context"
 	"time"
 
 	"github.com/google/uuid"
@@ -66,11 +67,34 @@ func createUser(c domain.Context, email, name, passwordHash, role string) (strin
 		return "", err
 	}
 
+	uid, err := uuid.Parse(userId)
+	if err != nil {
+		return "", err
+	}
+
+	saved, err := c.Connection().User().GetUser(uid)
+	if err != nil {
+		return "", err
+	}
+
+	plain, err := helpers.GenerateOTPCode(6)
+	if err != nil {
+		return "", err
+	}
+	if err := c.Services().OTPStore().SetEmailVerification(context.Background(), uid, plain, 24*time.Hour); err != nil {
+		return "", err
+	}
+
+	if err := c.Services().MailQueue().PublishVerificationEmail(saved.Email, plain); err != nil {
+		c.Services().Logger().Error("failed to send verification email", "error", err.Error())
+		return "", err
+	}
+
 	scheduleRollbackUser(c, id)
 	return userId, nil
 }
 
-const unverifiedUserRollbackAfter = 10 * time.Minute
+const unverifiedUserRollbackAfter = 48 * time.Hour
 
 func scheduleRollbackUser(c domain.Context, userId uuid.UUID) {
 	time.AfterFunc(unverifiedUserRollbackAfter, func() {
@@ -80,6 +104,7 @@ func scheduleRollbackUser(c domain.Context, userId uuid.UUID) {
 
 func rollbackUnverifiedUserIfNeeded(c domain.Context, userId uuid.UUID) {
 	logger := c.Services().Logger()
+	ctx := context.Background()
 
 	user, err := c.Connection().User().GetUser(userId)
 	if err != nil {
@@ -88,6 +113,9 @@ func rollbackUnverifiedUserIfNeeded(c domain.Context, userId uuid.UUID) {
 	}
 	if user.IsVerified {
 		return
+	}
+	if err := c.Services().OTPStore().InvalidateUserOTP(ctx, userId); err != nil {
+		logger.Error("failed to invalidate user otp in redis", "error", err.Error())
 	}
 	if err := c.Connection().User().DeleteFromDb(userId); err != nil {
 		logger.Error("failed to delete unverified user", "error", err.Error())

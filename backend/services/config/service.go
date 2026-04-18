@@ -27,11 +27,34 @@ type Auth struct {
 	JwtTTLMinutes int    `yaml:"jwt_ttl_minutes" env-default:"60"`
 }
 
+type RabbitMQ struct {
+	Enabled bool   `yaml:"enabled"`
+	URL     string `yaml:"url" env-default:"amqp://guest:guest@127.0.0.1:5672/"`
+}
+
+type Mail struct {
+	SkipSend     bool   `yaml:"skip_send"`
+	SMTPHost     string `yaml:"smtp_host"`
+	SMTPPort     int    `yaml:"smtp_port"`
+	SMTPUser     string `yaml:"smtp_user"`
+	SMTPPassword string `yaml:"smtp_password"`
+	FromAddress  string `yaml:"from_address" env-default:"noreply@localhost"`
+}
+
+type Redis struct {
+	Addr     string `yaml:"addr" env-default:"127.0.0.1:6379"`
+	Password string `yaml:"password" env-default:""`
+	DB       int    `yaml:"db" env-default:"0"`
+}
+
 type Config struct {
 	Env        string     `yaml:"env" env-required:"true"`
 	HttpServer HttpServer `yaml:"http_server"`
 	Db         Db         `yaml:"db"`
 	Auth       Auth       `yaml:"auth"`
+	RabbitMQ   RabbitMQ   `yaml:"rabbitmq"`
+	Mail       Mail       `yaml:"mail"`
+	Redis      Redis      `yaml:"redis"`
 }
 
 func Make() *Config {
@@ -99,4 +122,51 @@ func (s *Config) JwtTTL() time.Duration {
 		return time.Hour
 	}
 	return time.Duration(s.Auth.JwtTTLMinutes) * time.Minute
+}
+
+func (s *Config) RabbitMQEnabled() bool {
+	return s.RabbitMQ.Enabled
+}
+
+func (s *Config) RabbitMQURL() string {
+	return s.RabbitMQ.URL
+}
+
+func (s *Config) MailSkipSend() bool {
+	return s.Mail.SkipSend
+}
+
+func (s *Config) SMTPHost() string {
+	return s.Mail.SMTPHost
+}
+
+func (s *Config) SMTPPort() int {
+	if s.Mail.SMTPPort <= 0 {
+		return 587
+	}
+	return s.Mail.SMTPPort
+}
+
+func (s *Config) SMTPUser() string {
+	return s.Mail.SMTPUser
+}
+
+func (s *Config) SMTPPassword() string {
+	return s.Mail.SMTPPassword
+}
+
+func (s *Config) MailFrom() string {
+	return s.Mail.FromAddress
+}
+
+func (s *Config) RedisAddr() string {
+	return s.Redis.Addr
+}
+
+func (s *Config) RedisPassword() string {
+	return s.Redis.Password
+}
+
+func (s *Config) RedisDB() int {
+	return s.Redis.DB
 }

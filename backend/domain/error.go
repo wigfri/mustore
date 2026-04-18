@@ -36,6 +36,10 @@ func ErrForbidden(msg string) *Error {
 	return &Error{userValue: errors.New(msg), httpCode: http.StatusForbidden}
 }
 
+func ErrBadRequest(msg string) *Error {
+	return &Error{userValue: errors.New(msg), httpCode: http.StatusBadRequest}
+}
+
 func (e *Error) Message(debug bool) string {
 	if debug {
 		if e.userValue == nil {
