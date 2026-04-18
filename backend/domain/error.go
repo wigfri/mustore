@@ -1,6 +1,10 @@
 package domain
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"net/http"
+)
 
 type ErrorCode string
 
@@ -9,6 +13,31 @@ type Error struct {
 	userValue      error // Пользовательская ошибка
 	httpCode       int
 	extraCode      int
+}
+
+func (e *Error) Error() string {
+	if e == nil {
+		return ""
+	}
+	if e.userValue != nil {
+		return e.userValue.Error()
+	}
+	if e.technicalValue != nil {
+		return e.technicalValue.Error()
+	}
+	return "error"
+}
+
+func ErrUnauthorized(msg string) *Error {
+	return &Error{userValue: errors.New(msg), httpCode: http.StatusUnauthorized}
+}
+
+func ErrForbidden(msg string) *Error {
+	return &Error{userValue: errors.New(msg), httpCode: http.StatusForbidden}
+}
+
+func ErrBadRequest(msg string) *Error {
+	return &Error{userValue: errors.New(msg), httpCode: http.StatusBadRequest}
 }
 
 func (e *Error) Message(debug bool) string {

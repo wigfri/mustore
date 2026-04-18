@@ -88,6 +88,21 @@ func InternalServerError(err error) *RawResponse {
 	}
 }
 
+func DomainError(err error) *RawResponse {
+	var domainErr *domain.Error
+	if errors.As(err, &domainErr) {
+		st := domainErr.HttpCode()
+		if st == 0 {
+			st = http.StatusInternalServerError
+		}
+		return &RawResponse{
+			status: st,
+			error:  err,
+		}
+	}
+	return InternalServerError(err)
+}
+
 func OK(payload any) *RawResponse {
 	out := &RawResponse{
 		status: http.StatusOK,
