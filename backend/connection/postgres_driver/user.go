@@ -1,6 +1,8 @@
 package postgres_driver
 
 import (
+	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -12,9 +14,29 @@ type userRepository struct {
 	db *gorm.DB
 }
 
-func (e *userRepository) Update(id uuid.UUID, user *models.User) (*models.User, error) {
-	//TODO implement me
-	panic("implement me")
+func (e *userRepository) Update(id uuid.UUID, u *models.User) (*models.User, error) {
+	if u == nil {
+		return nil, errors.New("user is nil")
+	}
+
+	var n int64
+	if err := e.db.Model(&user{}).Where("id = ?", id).Count(&n).Error; err != nil {
+		return nil, err
+	}
+	if n == 0 {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	updates := map[string]interface{}{
+		"username":   u.Username,
+		"updated_at": time.Now(),
+	}
+
+	if err := e.db.Model(&user{}).Where("id = ?", id).Updates(updates).Error; err != nil {
+		return nil, err
+	}
+
+	return e.GetUser(id)
 }
 
 func (e *userRepository) DeleteFromDb(id uuid.UUID) error {
@@ -75,6 +97,20 @@ func (e *userRepository) GetUser(id uuid.UUID) (*models.User, error) {
 	var result user
 
 	if err := e.db.Where(models.User{Id: id}).First(&result).Error; err != nil {
+		return nil, err
+	}
+
+	return result.model(), nil
+}
+
+func (e *userRepository) GetUserByEmail(email string) (*models.User, error) {
+	normalized := strings.ToLower(strings.TrimSpace(email))
+	if normalized == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
+
+	var result user
+	if err := e.db.Where("LOWER(email) = ?", normalized).First(&result).Error; err != nil {
 		return nil, err
 	}
 

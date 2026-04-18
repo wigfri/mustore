@@ -1,0 +1,14 @@
+env: example # local/dev/prod
+auth:
+  jwt_secret: example
+  jwt_ttl_minutes: 60
+http_server:
+  host: 0.0.0.0
+  port: 8000
+db:
+  host: example
+  port: 5432
+  user: example
+  password: example
+  db_name: example
+  sslmode:

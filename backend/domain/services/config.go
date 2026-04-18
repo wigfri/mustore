@@ -1,5 +1,7 @@
 package services
 
+import "time"
+
 type Config interface {
 	HttpHost() string
 	HttpPort() string
@@ -10,4 +12,6 @@ type Config interface {
 	PostgresName() string
 	EnvLevel() string
 	SslMode() string
+	JwtSecret() string
+	JwtTTL() time.Duration
 }

@@ -70,19 +70,28 @@ func createUser(c domain.Context, email, name, passwordHash, role string) (strin
 	return userId, nil
 }
 
+const unverifiedUserRollbackAfter = 10 * time.Minute
+
 func scheduleRollbackUser(c domain.Context, userId uuid.UUID) {
-	time.AfterFunc(10*time.Minute, func() {
-		user, err := c.Connection().User().GetUser(userId)
-		if err != nil {
-			c.Services().Logger().Error("failed to fetch user in rollback", "error", err.Error())
-			return
-		}
-		if !user.IsVerified {
-			if err := c.Connection().User().DeleteFromDb(userId); err != nil {
-				c.Services().Logger().Error("failed to delete unverified user", "error", err.Error())
-			} else {
-				c.Services().Logger().Info("rolled back unverified user", "user_id", userId.String())
-			}
-		}
+	time.AfterFunc(unverifiedUserRollbackAfter, func() {
+		rollbackUnverifiedUserIfNeeded(c, userId)
 	})
+}
+
+func rollbackUnverifiedUserIfNeeded(c domain.Context, userId uuid.UUID) {
+	logger := c.Services().Logger()
+
+	user, err := c.Connection().User().GetUser(userId)
+	if err != nil {
+		logger.Error("failed to fetch user in rollback", "error", err.Error())
+		return
+	}
+	if user.IsVerified {
+		return
+	}
+	if err := c.Connection().User().DeleteFromDb(userId); err != nil {
+		logger.Error("failed to delete unverified user", "error", err.Error())
+		return
+	}
+	logger.Info("rolled back unverified user", "user_id", userId.String())
 }
