@@ -28,16 +28,16 @@ type Auth struct {
 }
 
 type RabbitMQ struct {
-	Enabled bool   `yaml:"enabled"`
+	Enabled bool   `yaml:"enabled" env-default:"false"`
 	URL     string `yaml:"url" env-default:"amqp://guest:guest@127.0.0.1:5672/"`
 }
 
 type Mail struct {
-	SkipSend     bool   `yaml:"skip_send"`
-	SMTPHost     string `yaml:"smtp_host"`
-	SMTPPort     int    `yaml:"smtp_port"`
-	SMTPUser     string `yaml:"smtp_user"`
-	SMTPPassword string `yaml:"smtp_password"`
+	SkipSend     bool   `yaml:"skip_send" env-default:"true"`
+	SMTPHost     string `yaml:"smtp_host" env-default:"localhost"`
+	SMTPPort     int    `yaml:"smtp_port" env-default:"587"`
+	SMTPUser     string `yaml:"smtp_user" env-default:""`
+	SMTPPassword string `yaml:"smtp_password" env-default:""`
 	FromAddress  string `yaml:"from_address" env-default:"noreply@localhost"`
 }
 

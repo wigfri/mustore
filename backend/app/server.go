@@ -89,6 +89,15 @@ func (s *HttpServer) Start() {
 		auth.Post("/resend-verification", v1.WrapHandler(v1.ResendVerification))
 	}
 
+	instruments := s.app.Group("/api/v1/instruments")
+	{
+		instruments.Post("/", v1.WrapHandler(v1.CreateInstrument))
+		instruments.Get("/:id", v1.WrapHandler(v1.GetInstrument))
+		instruments.Get("/", v1.WrapHandler(v1.GetAllInstruments))
+		instruments.Put("/:id", v1.WrapHandler(v1.UpdateInstrument))
+		instruments.Delete("/:id", v1.WrapHandler(v1.DeleteInstrument))
+	}
+
 	domainCtx.Services().Logger().Info("auth handlers initialized", "op", "server.Start()")
 
 	err := s.app.Listen(":" + cfg.HttpPort())
