@@ -20,7 +20,7 @@ swagger:
 	swag init --parseDependency -g main.go --output=./docs
 
 docker-build:
-	docker compose up -d --build
+	cd .. && docker compose up -d --build
 
 migrate-up:
 	CONFIG_PATH=./config/dev.yaml go run migrator.go up

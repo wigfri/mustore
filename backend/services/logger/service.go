@@ -16,6 +16,7 @@ const (
 	envLocal       = "local"
 	envDevelopment = "dev"
 	envProduction  = "prod"
+	envDocker      = "docker"
 )
 
 type PrettyHandlerOptions struct {
@@ -85,6 +86,11 @@ func Init(env string) services.Logger {
 		logger.log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
+	case envDocker:
+		// Container logs: structured JSON, no TTY colors (see config/docker.yaml env: docker).
+		logger.log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
 	case envDevelopment:
 		opts := PrettyHandlerOptions{SlogOpts: slog.HandlerOptions{Level: slog.LevelDebug}}
 		logger.log = slog.New(
@@ -93,6 +99,10 @@ func Init(env string) services.Logger {
 		opts := PrettyHandlerOptions{SlogOpts: slog.HandlerOptions{Level: slog.LevelDebug}}
 		logger.log = slog.New(
 			NewPrettyHandler(os.Stdout, opts))
+	default:
+		logger.log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
 	}
 
 	return &logger

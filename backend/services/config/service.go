@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -16,37 +17,37 @@ type HttpServer struct {
 }
 
 type Db struct {
-	Host     string `yaml:"host" env-default:"example"`
-	Port     string `yaml:"port" env-default:"5432"`
-	User     string `yaml:"user" env-default:"example"`
-	Password string `yaml:"password" env-default:"example"`
-	Name     string `yaml:"db_name" env-default:"example"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"db_name"`
 	SslMode  string `yaml:"sslmode"`
 }
 
 type Auth struct {
-	JwtSecret     string `yaml:"jwt_secret" env-default:"example"`
+	JwtSecret     string `yaml:"jwt_secret"`
 	JwtTTLMinutes int    `yaml:"jwt_ttl_minutes" env-default:"60"`
 }
 
 type RabbitMQ struct {
-	Enabled bool   `yaml:"enabled" env-default:"false"`
-	URL     string `yaml:"url" env-default:"amqp://guest:guest@127.0.0.1:5672/"`
+	Enabled bool   `yaml:"enabled"`
+	URL     string `yaml:"url"`
 }
 
 type Mail struct {
-	SkipSend     bool   `yaml:"skip_send" env-default:"true"`
-	SMTPHost     string `yaml:"smtp_host" env-default:"localhost"`
-	SMTPPort     int    `yaml:"smtp_port" env-default:"587"`
-	SMTPUser     string `yaml:"smtp_user" env-default:""`
-	SMTPPassword string `yaml:"smtp_password" env-default:""`
-	FromAddress  string `yaml:"from_address" env-default:"noreply@localhost"`
+	SkipSend     bool   `yaml:"skip_send"`
+	SMTPHost     string `yaml:"smtp_host"`
+	SMTPPort     int    `yaml:"smtp_port"`
+	SMTPUser     string `yaml:"smtp_user"`
+	SMTPPassword string `yaml:"smtp_password"`
+	FromAddress  string `yaml:"from_address"`
 }
 
 type Redis struct {
-	Addr     string `yaml:"addr" env-default:"127.0.0.1:6379"`
-	Password string `yaml:"password" env-default:""`
-	DB       int    `yaml:"db" env-default:"0"`
+	Addr     string `yaml:"addr"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
 }
 
 type Config struct {
@@ -75,6 +76,8 @@ func Make() *Config {
 	if err := cleanenv.ReadConfig(path, &config); err != nil {
 		slog.Error("cannot read config file", err)
 	}
+
+	fmt.Println(config)
 
 	return &config
 }
