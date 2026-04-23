@@ -31,35 +31,33 @@ func NewHttpServer() Server {
 		StreamRequestBody: true,
 	})
 
+	return &HttpServer{app: app}
+}
+
+func (s *HttpServer) Start() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	cfg := config.Make()
+
 	var methods = []string{fiber.MethodGet, fiber.MethodPost, fiber.MethodPut, fiber.MethodDelete, fiber.MethodOptions}
 	var headers = []string{fiber.HeaderAccept, fiber.HeaderAuthorization, fiber.HeaderContentType,
 		fiber.HeaderContentLength, fiber.HeaderAcceptEncoding, "X-CSRF-Token"}
 
-	corsConfig := cors.New(cors.Config{
-		AllowOrigins: strings.Join([]string{"*"}, ", "),
-		AllowMethods: strings.Join(methods, ", "),
-		AllowHeaders: strings.Join(headers, ", "),
-		MaxAge:       300,
-	})
-
-	app.Use(corsConfig)
-	app.Use(recover.New())
-
-	app.Use(logger.New(logger.Config{
+	s.app.Use(cors.New(cors.Config{
+		AllowOrigins:     cfg.CorsAllowedOrigins(),
+		AllowCredentials: true,
+		AllowMethods:     strings.Join(methods, ", "),
+		AllowHeaders:     strings.Join(headers, ", "),
+		MaxAge:           300,
+	}))
+	s.app.Use(recover.New())
+	s.app.Use(logger.New(logger.Config{
 		Format:       "${time} | ${status} | ${latency} | ${ip} | ${method} | ${path} | ${error}\n",
 		TimeFormat:   "15:04:05",
 		TimeZone:     "Europe/Moscow",
 		TimeInterval: 500 * time.Millisecond,
 	}))
 
-	return &HttpServer{app: app}
-}
-
-func (s *HttpServer) Start() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	domainCtx := InitCtx().Make()
-
-	cfg := config.Make()
+	domainCtx := InitCtx(cfg).Make()
 
 	s.app.Use("", func(ctx *fiber.Ctx) error {
 		ctx.Locals("context", domainCtx)

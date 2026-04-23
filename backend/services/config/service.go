@@ -3,14 +3,16 @@ package config
 import (
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type HttpServer struct {
-	Host string `yaml:"host" env-default:"0.0.0.0" env-required:"true"`
-	Port string `yaml:"port" env-default:"8000" env-required:"true"`
+	Host               string `yaml:"host" env-default:"0.0.0.0" env-required:"true"`
+	Port               string `yaml:"port" env-default:"8000" env-required:"true"`
+	CorsAllowedOrigins string `yaml:"cors_allowed_origins"`
 }
 
 type Db struct {
@@ -83,6 +85,15 @@ func (s *Config) HttpHost() string {
 
 func (s *Config) HttpPort() string {
 	return s.HttpServer.Port
+}
+
+// CorsAllowedOrigins returns comma-separated origins for CORS (required when the browser sends credentials).
+func (s *Config) CorsAllowedOrigins() string {
+	o := strings.TrimSpace(s.HttpServer.CorsAllowedOrigins)
+	if o == "" {
+		return "http://localhost:5173"
+	}
+	return o
 }
 
 func (s *Config) PostgresHost() string {

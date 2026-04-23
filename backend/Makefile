@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: build seed-instruments seed-instruments-force
 build:
 	go build -a -installsuffix cgo -ldflags '-extldflags "-static"' -o build/app main.go
 
@@ -27,3 +27,10 @@ migrate-up:
 
 migrate-down:
 	CONFIG_PATH=./config/dev.yaml go run migrator.go down
+
+# Fills the catalog with demo instruments if the table is empty. Use seed-instruments-force to append another batch.
+seed-instruments:
+	CONFIG_PATH=./config/dev.yaml go run ./cmd/seed-instruments
+
+seed-instruments-force:
+	CONFIG_PATH=./config/dev.yaml go run ./cmd/seed-instruments -force

@@ -55,8 +55,7 @@ func (c *ctx) Make() domain.Context {
 	}
 }
 
-func InitCtx() *ctx {
-	cfg := config.Make()
+func InitCtx(cfg *config.Config) *ctx {
 	connection, err := InitDB(cfg)
 	if err != nil {
 		log.Fatalf("cant initialize connection context due [%s]", err)
