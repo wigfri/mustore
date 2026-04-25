@@ -31,35 +31,33 @@ func NewHttpServer() Server {
 		StreamRequestBody: true,
 	})
 
+	return &HttpServer{app: app}
+}
+
+func (s *HttpServer) Start() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	cfg := config.Make()
+
 	var methods = []string{fiber.MethodGet, fiber.MethodPost, fiber.MethodPut, fiber.MethodDelete, fiber.MethodOptions}
 	var headers = []string{fiber.HeaderAccept, fiber.HeaderAuthorization, fiber.HeaderContentType,
 		fiber.HeaderContentLength, fiber.HeaderAcceptEncoding, "X-CSRF-Token"}
 
-	corsConfig := cors.New(cors.Config{
-		AllowOrigins: strings.Join([]string{"*"}, ", "),
-		AllowMethods: strings.Join(methods, ", "),
-		AllowHeaders: strings.Join(headers, ", "),
-		MaxAge:       300,
-	})
-
-	app.Use(corsConfig)
-	app.Use(recover.New())
-
-	app.Use(logger.New(logger.Config{
+	s.app.Use(cors.New(cors.Config{
+		AllowOrigins:     cfg.CorsAllowedOrigins(),
+		AllowCredentials: true,
+		AllowMethods:     strings.Join(methods, ", "),
+		AllowHeaders:     strings.Join(headers, ", "),
+		MaxAge:           300,
+	}))
+	s.app.Use(recover.New())
+	s.app.Use(logger.New(logger.Config{
 		Format:       "${time} | ${status} | ${latency} | ${ip} | ${method} | ${path} | ${error}\n",
 		TimeFormat:   "15:04:05",
 		TimeZone:     "Europe/Moscow",
 		TimeInterval: 500 * time.Millisecond,
 	}))
 
-	return &HttpServer{app: app}
-}
-
-func (s *HttpServer) Start() {
-	runtime.GOMAXPROCS(runtime.NumCPU())
-	domainCtx := InitCtx().Make()
-
-	cfg := config.Make()
+	domainCtx := InitCtx(cfg).Make()
 
 	s.app.Use("", func(ctx *fiber.Ctx) error {
 		ctx.Locals("context", domainCtx)
@@ -87,6 +85,15 @@ func (s *HttpServer) Start() {
 		auth.Post("/logout", v1.WrapHandler(v1.Logout))
 		auth.Post("/verify-email", v1.WrapHandler(v1.VerifyEmail))
 		auth.Post("/resend-verification", v1.WrapHandler(v1.ResendVerification))
+	}
+
+	instruments := s.app.Group("/api/v1/instruments")
+	{
+		instruments.Post("/", v1.WrapHandler(v1.CreateInstrument))
+		instruments.Get("/:id", v1.WrapHandler(v1.GetInstrument))
+		instruments.Get("/", v1.WrapHandler(v1.GetAllInstruments))
+		instruments.Put("/:id", v1.WrapHandler(v1.UpdateInstrument))
+		instruments.Delete("/:id", v1.WrapHandler(v1.DeleteInstrument))
 	}
 
 	domainCtx.Services().Logger().Info("auth handlers initialized", "op", "server.Start()")

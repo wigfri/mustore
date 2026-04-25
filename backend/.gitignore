@@ -1,4 +1,5 @@
 .idea
 config/dev.yaml
+config/docker.yaml
 build/
 .env

@@ -13,13 +13,15 @@ import (
 type connection struct {
 	db *gorm.DB
 
-	userRepository repositories.User
+	userRepository       repositories.User
+	instrumentRepository repositories.Instrument
 }
 
 func makeConnection(db *gorm.DB) *connection {
 	return &connection{
-		db:             db,
-		userRepository: &userRepository{db},
+		db:                   db,
+		userRepository:       &userRepository{db},
+		instrumentRepository: &instrumentRepository{db: db},
 	}
 }
 
@@ -49,6 +51,7 @@ func Make(user, password, host, port, database, sslmode string) (domain.Connecti
 
 	if err := db.AutoMigrate(
 		&models.User{},
+		&models.Instrument{},
 	); err != nil {
 		return nil, fmt.Errorf("unable to migrate database due [%w]", err)
 	}
@@ -58,4 +61,8 @@ func Make(user, password, host, port, database, sslmode string) (domain.Connecti
 
 func (c connection) User() repositories.User {
 	return c.userRepository
+}
+
+func (c connection) Instrument() repositories.Instrument {
+	return c.instrumentRepository
 }

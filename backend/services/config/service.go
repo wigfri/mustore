@@ -1,35 +1,38 @@
 package config
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
 type HttpServer struct {
-	Host string `yaml:"host" env-default:"0.0.0.0" env-required:"true"`
-	Port string `yaml:"port" env-default:"8000" env-required:"true"`
+	Host               string `yaml:"host" env-default:"0.0.0.0" env-required:"true"`
+	Port               string `yaml:"port" env-default:"8000" env-required:"true"`
+	CorsAllowedOrigins string `yaml:"cors_allowed_origins"`
 }
 
 type Db struct {
-	Host     string `yaml:"host" env-default:"example"`
-	Port     string `yaml:"port" env-default:"5432"`
-	User     string `yaml:"user" env-default:"example"`
-	Password string `yaml:"password" env-default:"example"`
-	Name     string `yaml:"db_name" env-default:"example"`
+	Host     string `yaml:"host"`
+	Port     string `yaml:"port"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Name     string `yaml:"db_name"`
 	SslMode  string `yaml:"sslmode"`
 }
 
 type Auth struct {
-	JwtSecret     string `yaml:"jwt_secret" env-default:"example"`
+	JwtSecret     string `yaml:"jwt_secret"`
 	JwtTTLMinutes int    `yaml:"jwt_ttl_minutes" env-default:"60"`
 }
 
 type RabbitMQ struct {
 	Enabled bool   `yaml:"enabled"`
-	URL     string `yaml:"url" env-default:"amqp://guest:guest@127.0.0.1:5672/"`
+	URL     string `yaml:"url"`
 }
 
 type Mail struct {
@@ -38,13 +41,13 @@ type Mail struct {
 	SMTPPort     int    `yaml:"smtp_port"`
 	SMTPUser     string `yaml:"smtp_user"`
 	SMTPPassword string `yaml:"smtp_password"`
-	FromAddress  string `yaml:"from_address" env-default:"noreply@localhost"`
+	FromAddress  string `yaml:"from_address"`
 }
 
 type Redis struct {
-	Addr     string `yaml:"addr" env-default:"127.0.0.1:6379"`
-	Password string `yaml:"password" env-default:""`
-	DB       int    `yaml:"db" env-default:"0"`
+	Addr     string `yaml:"addr"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
 }
 
 type Config struct {
@@ -74,6 +77,8 @@ func Make() *Config {
 		slog.Error("cannot read config file", err)
 	}
 
+	fmt.Println(config)
+
 	return &config
 }
 
@@ -83,6 +88,15 @@ func (s *Config) HttpHost() string {
 
 func (s *Config) HttpPort() string {
 	return s.HttpServer.Port
+}
+
+// CorsAllowedOrigins returns comma-separated origins for CORS (required when the browser sends credentials).
+func (s *Config) CorsAllowedOrigins() string {
+	o := strings.TrimSpace(s.HttpServer.CorsAllowedOrigins)
+	if o == "" {
+		return "http://localhost:5173"
+	}
+	return o
 }
 
 func (s *Config) PostgresHost() string {

@@ -2,6 +2,7 @@ package v1
 
 import (
 	"strings"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/wigfri/mustore/domain"
@@ -12,6 +13,7 @@ import (
 )
 
 const bearerPrefix = "Bearer "
+const accessTokenCookieName = "access_token"
 
 // Login godoc
 // @Summary Log in
@@ -36,6 +38,19 @@ func Login(c domain.Context, ctx *fiber.Ctx) *RawResponse {
 	if err != nil {
 		return DomainError(err)
 	}
+
+	if res.AccessToken != "" {
+		expiresAt := time.Now().Add(time.Duration(res.ExpiresIn) * time.Second)
+		ctx.Cookie(&fiber.Cookie{
+			Name:     accessTokenCookieName,
+			Value:    res.AccessToken,
+			HTTPOnly: true,
+			Secure:   ctx.Protocol() == "https",
+			Path:     "/",
+			Expires:  expiresAt,
+		})
+	}
+
 	return OK(res)
 }
 
@@ -59,6 +74,17 @@ func Logout(c domain.Context, ctx *fiber.Ctx) *RawResponse {
 	if err := logout_user.Run(c, logout_user.Request{AccessToken: token}); err != nil {
 		return DomainError(err)
 	}
+
+	ctx.Cookie(&fiber.Cookie{
+		Name:     accessTokenCookieName,
+		Value:    "",
+		HTTPOnly: true,
+		Secure:   ctx.Protocol() == "https",
+		Path:     "/",
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	})
+
 	return OK(nil)
 }
 
