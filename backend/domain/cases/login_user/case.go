@@ -75,6 +75,10 @@ func Run(c domain.Context, r Request) (*Response, error) {
 		logger.Error("failed to sign access token", "op", op, "error", err.Error())
 		return nil, err
 	}
+	if err := c.Connection().Analytics().RecordLogin(user.Id.String()); err != nil {
+		logger.Error("failed to record login analytics", "op", op, "error", err.Error(), "user_id", user.Id.String())
+		return nil, err
+	}
 
 	logger.Info("user logged in", "op", op, "user_id", user.Id.String())
 	return &Response{
