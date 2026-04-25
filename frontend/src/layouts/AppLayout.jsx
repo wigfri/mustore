@@ -25,6 +25,11 @@ export function AppLayout() {
               <NavLink to="/instruments" className={navClass} end>
                 Все товары
               </NavLink>
+              {isAdmin ? (
+                <NavLink to="/admin/analytics" className={navClass}>
+                  Аналитика
+                </NavLink>
+              ) : null}
             </nav>
           </div>
           <div className="flex items-center gap-2">

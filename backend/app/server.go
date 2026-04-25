@@ -87,6 +87,11 @@ func (s *HttpServer) Start() {
 		auth.Post("/resend-verification", v1.WrapHandler(v1.ResendVerification))
 	}
 
+	admin := s.app.Group("/api/v1/admin")
+	{
+		admin.Get("/analytics", v1.WrapHandler(v1.AdminAnalytics))
+	}
+
 	instruments := s.app.Group("/api/v1/instruments")
 	{
 		instruments.Post("/", v1.WrapHandler(v1.CreateInstrument))
