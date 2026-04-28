@@ -28,7 +28,7 @@ func CreateUser(c domain.Context, ctx *fiber.Ctx) *RawResponse {
 
 	id, err := create_user.Run(c, req)
 	if err != nil {
-		return InternalServerError(err)
+		return DomainError(err)
 	}
 
 	return OK(id)

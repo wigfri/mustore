@@ -34,7 +34,7 @@ func Run(c domain.Context, r Request) (*Response, error) {
 
 	if r.Password != "" {
 		if err := helpers.ValidatePassword(r.Password); err != nil {
-			return nil, err
+			return nil, domain.ErrBadRequest(err.Error())
 		}
 		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(r.Password), bcrypt.DefaultCost)
 		if err != nil {
@@ -57,7 +57,7 @@ func createUser(c domain.Context, email, name, passwordHash, role string) (strin
 
 	_, err := models.IsValidRole(role)
 	if err != nil {
-		return "", err
+		return "", domain.ErrBadRequest(err.Error())
 	}
 
 	user = models.NewBaseUser(id, email, name, passwordHash)
